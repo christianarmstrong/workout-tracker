@@ -1,6 +1,8 @@
 # workout-tracker
 
-Workout tracker is as an web app to track your workout sets and reps. It is designed to be simple. The only functionality are -
+Workout tracker is as an web app to track your workout sets and reps. It is designed to be simple.
+
+It allows you to
 
 - create a workout with up to 15 individual exercises each with defined sets and reps up to 50, record sets and reps for
 - record each workout exercises reps and weight while displaying your previous workouts reps and weight
