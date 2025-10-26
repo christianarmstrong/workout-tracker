@@ -1,13 +1,14 @@
+"use client";
 import { useRouter } from "next/navigation";
 import { Pencil } from 'lucide-react';
 import { Button } from './ui/button';
-export default function WorkoutCard(workoutName: string) {
+export default function WorkoutCard({ name }: { name: string }) {
     const router = useRouter();
     return (
         <>
-            <div onClick={() => router.push('/workouts/record')} className="col-span-6">
+            <div onClick={() => router.push(`/workouts/log?name=${encodeURIComponent(name)}`)} className="col-span-7">
                 <div className="outline-solid outline rounded-sm shadow-md p-5 w-full">
-                    <h1 > {workoutName} </h1>
+                    <p > {name} </p>
                 </div>
             </div>
             <div onClick={() => router.push('/workouts/edit')} className="col-span-2 flex items-stretch">
