@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import WorkoutCard from "@/components/workout-card";
 import { useRouter } from "next/navigation";
 
-export default function Home() {
+export default function Page() {
     const router = useRouter();
     
     return (

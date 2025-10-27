@@ -1,13 +1,14 @@
-"use client";
+import BackButton from "@/components/back-button";
 import ExerciseCard from "@/components/exercise-card";
 import { Button } from "@/components/ui/button";
-import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
-
-export default function Home() {
-    const searchParams = useSearchParams();
-    const name = searchParams.get("name");
-    const router = useRouter();
+export default async function Page({
+    searchParams,
+    }: {
+    searchParams?: Promise<{ name?: string | string[]; sets?: string | string[]; reps?: string | string[] }> | { name?: string | string[]; sets?: string | string[]; reps?: string | string[] };
+    }) {
+    const params = await searchParams;
+    const first = (v?: string | string[]) => Array.isArray(v) ? v[0] : (v ?? "");
+    const name = first(params?.name);
     return (
          <div className="flex min-h-screen items-center justify-center font-sans bg-zinc-50">
             <main className="flex min-h-screen w-full max-w-3xl flex-col justify-between py-20 px-10 bg-zinc-50 items-start">
@@ -24,7 +25,7 @@ export default function Home() {
                     <ExerciseCard name="Tricep Pulldown" sets="3" reps="8-10" type="none" />
 
                     <div className="col-span-8 mt-6">
-                        <Button onClick={() => router.back()} > Back to workouts </Button>
+                        <BackButton> Back to workouts </BackButton>
                     </div>
                 </div>
             </main>

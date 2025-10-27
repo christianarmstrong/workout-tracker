@@ -1,14 +1,17 @@
-"use client";
+import BackButton from "@/components/back-button";
 import ExerciseCard from "@/components/exercise-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
-export default function Home() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const name = searchParams.get("name");
-    const sets = searchParams.get("sets");
-    const reps = searchParams.get("reps");
+export default async function Page({
+    searchParams,
+    }: {
+    searchParams?: Promise<{ name?: string | string[]; sets?: string | string[]; reps?: string | string[] }> | { name?: string | string[]; sets?: string | string[]; reps?: string | string[] };
+    }) {
+    const params = await searchParams;
+    const first = (v?: string | string[]) => Array.isArray(v) ? v[0] : (v ?? "");
+    const name = first(params?.name);
+    const reps = first(params?.reps);
+    const sets = first(params?.sets);
     return (
         <div className="flex min-h-screen items-center justify-center font-sans bg-zinc-50">
             <main className="flex min-h-screen w-full max-w-3xl flex-col justify-between py-20 px-10 bg-zinc-50 items-start">
@@ -37,7 +40,7 @@ export default function Home() {
                     <Input className="col-span-9" placeholder="enter weight"/>
 
                     <div className="col-span-8 mt-3">
-                        <Button onClick={() => router.back()} > Log </Button>
+                        <BackButton> Log </BackButton>
                     </div>
                 </div>
             </main>
