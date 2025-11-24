@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 
-export default function ModifyWorkout({ type }: { type?: "edit" | "create" | string }) {
+type ModifyWorkoutProps = {
+    type: "edit" | "create" | string,
+    availableExercises: Array<any>,
+    exercisesInWorkout: Array<any>,
+    setExercisesInWorkout: React.Dispatch<React.SetStateAction<Array<any>>>
+}
+
+export default function ModifyWorkout({ type, availableExercises, exercisesInWorkout, setExercisesInWorkout }: ModifyWorkoutProps) {
     const router = useRouter();
     const mode = type ?? "create";
     const title = mode === "edit" ? "Edit workout" : "Create workout";
@@ -22,10 +29,10 @@ export default function ModifyWorkout({ type }: { type?: "edit" | "create" | str
                     <h2 className="max-w-md col-span-6 text-xl font-semibold leading-10 tracking-tight text-black" >
                         Exercises in Workout
                     </h2>
-
-                    <ExerciseCard name="Flat Dumbell Bench Press" sets="3" reps="6-8" type="remove" />
-                    <ExerciseCard name="Incline Dumbell Bench Press" sets="3" reps="8-10" type="remove" />
-                    <ExerciseCard name="Machine Shoulder Press" sets="3" reps="8-10" type="remove" />
+                    
+                    {exercisesInWorkout && exercisesInWorkout?.map((exercise, index) => (
+                        <ExerciseCard key={index} id={exercise.id} name={exercise.name} sets={exercise.sets} reps={exercise.reps} type="remove" exercisesInWorkout={exercisesInWorkout} setExercisesInWorkout={setExercisesInWorkout} />
+                    ))}
 
                     <div className="col-span-8 mt-3">
                         <Button onClick={() => router.back()} > Save workout </Button>
@@ -35,9 +42,9 @@ export default function ModifyWorkout({ type }: { type?: "edit" | "create" | str
                         Available Exercises
                     </h2>
 
-                    <ExerciseCard name="Cable Chest Fly" sets="3" reps="8-10" type="add" />
-                    <ExerciseCard name="Cable Lateral Shoulder Raise" sets="3" reps="8-10" type="add" />
-                    <ExerciseCard name="Tricep Pulldown" sets="3" reps="8-10" type="add" />
+                    {availableExercises && availableExercises?.map((exercise, index) => (
+                        <ExerciseCard key={index} id={exercise.id} name={exercise.name} sets={exercise.sets} reps={exercise.reps}  type="add" exercisesInWorkout={exercisesInWorkout} setExercisesInWorkout={setExercisesInWorkout} />
+                    ))}
 
                     <div className="col-span-8 mt-3">
                         <Button onClick={() => router.push('/exercises/create')} > Create an exercise </Button>

@@ -1,11 +1,15 @@
-"use client";
 import ExerciseCard from "@/components/exercise-card";
 import { Button } from "@/components/ui/button";
 import WorkoutCard from "@/components/workout-card";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/utils/supabase/client";
+import Link from "next/dist/client/link";
 
-export default function Page() {
-    const router = useRouter();
+export default async function Page() {
+    const supabase = await createClient();
+    const userId = "9bf614f0-a576-4f0d-94f4-fb9dd72fe8aa";
+    const { data: workouts } = await supabase.from("workout_templates").select("*").eq("user_id", userId);
+    const { data: exercises} = await supabase.from("exercises").select("*").eq("created_by", userId);
+    console.log(exercises);
     
     return (
         // Main page
@@ -15,31 +19,24 @@ export default function Page() {
                     <h1 className="max-w-md mb-3 col-span-3 text-3xl font-semibold leading-10 tracking-tight text-black">
                         Workouts
                     </h1>
-                    
-                    <WorkoutCard name="Push 1" />
-                    <WorkoutCard name="Pull 1" />
-                    <WorkoutCard name="Legs 1" />
-                    <WorkoutCard name="Push 2" />
-                    <WorkoutCard name="Pull 2" />
-                    <WorkoutCard name="Legs 2" />
+                    {workouts?.map((workout: { id: string; name: string }) => (
+                    <WorkoutCard key={workout.id} name={workout.name} />
+                    ))}
 
                     <div className="col-span-8 mt-6">
-                        <Button onClick={() => router.push('/workouts/create')} > Create a workout </Button>
+                        <Button><Link href="/workouts/create"> Create a workout </Link></Button>
                     </div>
 
                     <h1 className="max-w-md mb-3 col-span-3 mt-10 text-3xl font-semibold leading-10 tracking-tight text-black">
                         Exercises
                     </h1>
                     
-                    <ExerciseCard name="Flat Dumbell Bench Press" sets="3" reps="6-8" type="none" />
-                    <ExerciseCard name="Incline Dumbell Bench Press" sets="3" reps="8-10" type="none" />
-                    <ExerciseCard name="Machine Shoulder Press" sets="3" reps="8-10" type="none" />
-                    <ExerciseCard name="Cable Chest Fly" sets="3" reps="8-10" type="none" />
-                    <ExerciseCard name="Cable Lateral Shoulder Raise" sets="3" reps="8-10" type="none" />
-                    <ExerciseCard name="Tricep Pulldown" sets="3" reps="8-10" type="none" />
+                    {exercises?.map((exercise: { id: string; name: string; sets: string; reps: string }) => (
+                    <ExerciseCard key={exercise.id} id={exercise.id} name={exercise.name} sets={exercise.sets} reps={exercise.reps} type="none" />
+                    ))}
 
                     <div className="col-span-8 mt-6">
-                        <Button onClick={() => router.push('/exercises/create')} > Create an exercise </Button>
+                        <Button><Link href="/exercises/create"> Create an exercise </Link></Button>
                     </div>
                 </div>
             </main>
