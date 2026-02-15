@@ -2,11 +2,11 @@
 import { useRouter } from "next/navigation";
 import { Pencil } from 'lucide-react';
 import { Button } from './ui/button';
-export default function WorkoutCard({ name }: { name: string }) {
+export default function WorkoutCard({ id, name }: { id: string; name: string }) {
     const router = useRouter();
     return (
         <>
-            <div onClick={() => router.push(`/workouts/log?name=${encodeURIComponent(name)}`)} className="col-span-7">
+            <div onClick={() => router.push(`/workouts/log?id=${encodeURIComponent(id)}`)} className="col-span-7">
                 <div className="outline-solid outline rounded-sm shadow-md p-5 w-full">
                     <p > {name} </p>
                 </div>

@@ -40,6 +40,9 @@ const exercise = z.object({
 
 export default function CreateExerciseForm() {
 
+  const [message, setMessage] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
+
   React.useEffect(() => {
     const missing: string[] = []
     if (typeof Card === "undefined") missing.push("Card")
@@ -72,26 +75,22 @@ export default function CreateExerciseForm() {
   const router = useRouter();
   async function onSubmit(data: z.infer<typeof exercise>) {
     try {
-      const supabase = createClient();
-      const { data: inserted, error } = await supabase
-        .from("exercises")
-        .insert([{ name: data.name, reps: data.reps, sets: data.sets, created_by: "9bf614f0-a576-4f0d-94f4-fb9dd72fe8aa" }])
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Insert error:", error);
+      const res = await fetch("/api/exercises/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: data.name, reps: data.reps, sets: data.sets  }),
+      });
+      const body = await res.json();
+      if (body.ok) {
+        console.log("Exercise created:", body.exercise);
+        router.push("/workouts");
+      } else {
         toast("Failed to save exercise");
-        return;
       }
-
-      toast("Exercise saved");
-      form.reset();
-      router.replace('/workouts');
-      console.log("Inserted exercise:", inserted);
     } catch (err) {
-      console.error(err);
-      toast("Unexpected error");
+      toast("Problem saving exercise");
+    } finally {
+      setLoading(false);
     }
   }
 

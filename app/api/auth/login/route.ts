@@ -1,25 +1,40 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@/lib/utils/supabase/server";
 
 export async function POST(req: Request) {
   try {
-    const { username, password } = await req.json();
-    if (typeof username !== "string" || typeof password !== "string") {
-      return NextResponse.json({ ok: false, error: "Invalid payload" }, { status: 400 });
+    const { email, password } = await req.json();
+    console.log("email:", email);
+    console.log("password:", password);
+    if (!email || !password) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const envKey = `${username.toUpperCase()}_PASSWORD`;
-    const expected = process.env[envKey];
+    const supabase = await createClient();
+    
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password,
+    });
 
-    if (!expected) {
-      return NextResponse.json({ ok: false, error: "Unknown user" }, { status: 404 });
+    if (error) {
+      console.error("Login error:", error);
+      return NextResponse.json({ ok: false, error: error.message }, { status: 401 });
     }
 
-    if (password === expected) {
-      return NextResponse.json({ ok: true });
-    }
+    console.log("Login successful for user:", data.user);
+    return NextResponse.json(
+      {
+        ok: true,
+        user: data.user,
+        session: data.session,
+        weakPassword: data.weakPassword ?? null,
+      },
+      { status: 200 }
+    );
 
-    return NextResponse.json({ ok: false, error: "Invalid credentials" }, { status: 401 });
   } catch (e) {
-    return NextResponse.json({ ok: false, error: "Server error" }, { status: 500 });
+    console.error("Server error:", e);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

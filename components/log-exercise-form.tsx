@@ -18,13 +18,49 @@ import {
 import { createClient } from "@/lib/utils/supabase/client";
 import { Card } from "./ui/card";
 
-const setItem = z.object({
-  reps: z.string().min(1, "Reps required"),
-  weight: z.string().min(1, "Weight required"),
-});
-const exerciseSchema = z.object({
-  sets: z.array(setItem).min(1),
-});
+const setItem = z
+  .object({
+    reps: z.string(),
+    weight: z.string(),
+  })
+  .superRefine((value, ctx) => {
+    const hasReps = value.reps.trim().length > 0;
+    const hasWeight = value.weight.trim().length > 0;
+
+    if (hasReps && !hasWeight) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["weight"],
+        message: "Weight required when reps is entered",
+      });
+    }
+
+    if (!hasReps && hasWeight) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["reps"],
+        message: "Reps required when weight is entered",
+      });
+    }
+  });
+
+const exerciseSchema = z
+  .object({
+    sets: z.array(setItem).min(1),
+  })
+  .superRefine((value, ctx) => {
+    const hasAtLeastOneCompletedSet = value.sets.some(
+      (set) => set.reps.trim().length > 0 && set.weight.trim().length > 0
+    );
+
+    if (!hasAtLeastOneCompletedSet) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sets", 0, "reps"],
+        message: "Enter reps and weight for at least one set",
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof exerciseSchema>;
 
@@ -43,7 +79,7 @@ export default function LogExerciseForm({ id, sets }: { id: string; sets: number
       .select("*")
       .eq("exercise_id", id)
       .order("performed_at", { ascending: false })
-      .limit(100);
+      .limit(20);
     
     if (data) {
       // process data to get the most recent set for each set number
@@ -55,6 +91,7 @@ export default function LogExerciseForm({ id, sets }: { id: string; sets: number
         }
       });
       setPreviousSets(Array.from({ length: sets }).map((_, i) => latestSets[i + 1] || { reps: "", weight: "" }));
+      console.log("Fetched previous sets: ", latestSets);
     }
     if (error) {
       console.error("fetch previous sets error:", error);
@@ -73,13 +110,36 @@ export default function LogExerciseForm({ id, sets }: { id: string; sets: number
 
   async function onSubmit(values: FormValues) {
     console.log("Submitted sets:", values.sets);
-    // build payloads with setNumber = index + 1
-    const payloads = values.sets.map((s, i) => ({
-      user_id: "9bf614f0-a576-4f0d-94f4-fb9dd72fe8aa",
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user?.id) {
+      toast("You must be logged in to log sets");
+      return;
+    }
+
+    console.log(user);
+    const completedSets = values.sets.filter(
+      (set) => set.reps.trim().length > 0 && set.weight.trim().length > 0
+    );
+
+    if (!completedSets.length) {
+      toast("Enter reps and weight for at least one set");
+      return;
+    }
+
+    // build payloads with setNumber = index + 1 (preserve original set index)
+    const payloads = values.sets
+      .map((s, i) => ({ ...s, setNumber: i + 1 }))
+      .filter((set) => set.reps.trim().length > 0 && set.weight.trim().length > 0)
+      .map((set) => ({
+      user_id: user.id,
       exercise_id: id,
-      set_number: i + 1,
-      reps: s.reps,
-      weight: s.weight,
+      set_number: set.setNumber,
+      reps: set.reps.trim(),
+      weight: set.weight.trim(),
       // include other fields (exercise_id, session_id, etc.) as needed
     }));
 
@@ -88,7 +148,7 @@ export default function LogExerciseForm({ id, sets }: { id: string; sets: number
       const { data, error } = await supabase.from("workout_sets").insert(payloads);
       if (error) {
         console.error("Insert error:", error);
-        toast("Failed to log sets");
+        toast("Failed to log sets: " + error.message);
         return;
       }
       toast("Sets logged");
@@ -114,8 +174,9 @@ export default function LogExerciseForm({ id, sets }: { id: string; sets: number
             Set {idx + 1}
           </h1>
 
-          <Card> <div className="ml-3"> Previous set -  {previousSets[idx]?.reps} x {previousSets[idx]?.weight}</div></Card>
-          
+          <div className="mb-3">
+            <Card> <div className="ml-3 "> Previous set -  {previousSets[idx]?.reps} x {previousSets[idx]?.weight}</div></Card>
+          </div>
           <FieldGroup>
             <Controller
               name={`sets.${idx}.reps`}

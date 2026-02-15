@@ -7,9 +7,6 @@ import React from "react";
 import UserSelect from "@/components/user-select";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const { data: users } = await supabase.from("users").select();
-  console.log(users)
   return (
     // Login Page
     <div className="flex min-h-screen items-center justify-center font-sans bg-zinc-50">
@@ -24,7 +21,7 @@ export default async function Home() {
             Track your workouts, including exercises, sets, and reps.
           </p>
 
-          <UserSelect users={users || []} />
+          <UserSelect />
         </div>
       </main>
     </div>

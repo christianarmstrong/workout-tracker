@@ -4,32 +4,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 
-export default function UserSelect({ users }: { users: { id: string; name?: string }[] }) {
- const [showPassword, setShowPassword] = useState(false);
-  const [selected, setSelected] = useState<string | null>(null);
+export default function UserSelect() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [user, setUser] = useState(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [invalid, setInvalid] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
-    if (!selected) return setMessage("Select a user");
     setLoading(true);
-    setMessage(null);
     setInvalid(false);
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: selected, password }),
+        body: JSON.stringify({ email:  email, password: password }),
       });
       const body = await res.json();
-      if (res.ok && body.ok) {
+      if (body.ok) {
+        setUser(body.user);
         router.push("/workouts");
       } else {
         setMessage(body.error ?? "Login failed");
-        if (res.status === 401 || body.error === "Invalid credentials") setInvalid(true);
+        if (body.error === "Invalid credentials") setInvalid(true);
       }
     } catch (err) {
       setMessage("Network error");
@@ -40,21 +39,14 @@ export default function UserSelect({ users }: { users: { id: string; name?: stri
 
   return (
     <div className="flex flex-col items-start gap-3">
-      <Select onValueChange={(val: string) => { setSelected(val); setShowPassword(true); }}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Select a user" />
-        </SelectTrigger>
-        <SelectContent>
-          {users.map((u) => (
-            <SelectItem key={u.id} value={u.name ?? String(u.id)}>
-              {u.name ?? u.id}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {showPassword && (
         <div className="flex flex-col gap-2 w-full">
+          <p className="text-sm text-black"> Email </p>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            className={`border rounded-md p-2 ${invalid ? "border border-red-300" : "border border-gray-300"}`}
+          />
           <p className="text-sm text-black"> Password </p>
           <input
             value={password}
@@ -63,12 +55,11 @@ export default function UserSelect({ users }: { users: { id: string; name?: stri
             className={`border rounded-md p-2 ${invalid ? "border border-red-300" : "border border-gray-300"}`}
           />
           <div className="flex gap-2 mt-2">
-            <Button onClick={handleLogin} disabled={loading || !selected}>
+            <Button onClick={handleLogin} disabled={loading}>
               {loading ? "Signing in..." : "Log in"}
             </Button>
           </div>
         </div>
-      )}
     </div>
   );
 }

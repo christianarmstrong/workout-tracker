@@ -12,11 +12,12 @@ export async function POST(req: Request) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("exercises")
-      .insert([{ name, reps, sets }])
+      .insert([{ name, reps, sets, created_by: (await supabase.auth.getUser()).data.user?.id }])
       .select()
       .single();
 
     if (error) {
+      console.error("Error inserting exercise:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 

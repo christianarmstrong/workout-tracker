@@ -1,16 +1,29 @@
 import ExerciseCard from "@/components/exercise-card";
 import { Button } from "@/components/ui/button";
 import WorkoutCard from "@/components/workout-card";
-import { createClient } from "@/lib/utils/supabase/client";
-import Link from "next/dist/client/link";
+import { createClient } from "@/lib/utils/supabase/server";
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function Page() {
     const supabase = await createClient();
-    const userId = "9bf614f0-a576-4f0d-94f4-fb9dd72fe8aa";
-    const { data: workouts } = await supabase.from("workout_templates").select("*").eq("user_id", userId);
-    const { data: exercises} = await supabase.from("exercises").select("*").eq("created_by", userId);
-    console.log(exercises);
-    
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData.user) {
+        redirect("/");
+    }
+
+    const userId = userData.user.id;
+    const { data: workouts } = await supabase
+        .from("workout_templates")
+        .select("*")
+        .eq("user_id", userId);
+
+    const { data: exercises } = await supabase
+        .from("exercises")
+        .select("*")
+        .eq("created_by", userId);
+
     return (
         // Main page
         <div className="flex min-h-screen items-center justify-center font-sans bg-zinc-50">
@@ -20,7 +33,7 @@ export default async function Page() {
                         Workouts
                     </h1>
                     {workouts?.map((workout: { id: string; name: string }) => (
-                    <WorkoutCard key={workout.id} name={workout.name} />
+                    <WorkoutCard key={workout.id} name={workout.name} id={workout.id} />
                     ))}
 
                     <div className="col-span-8 mt-6">
