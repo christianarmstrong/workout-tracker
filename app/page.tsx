@@ -1,12 +1,12 @@
-"use client";
 import Image from "next/image";
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { useRouter } from "next/navigation";
+import { createClient } from '@/lib/utils/supabase/server';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import React from "react";
+import UserSelect from "@/components/user-select";
 
-export default function Home() {
-  const router = useRouter();
+export default async function Home() {
   return (
     // Login Page
     <div className="flex min-h-screen items-center justify-center font-sans bg-zinc-50">
@@ -21,18 +21,7 @@ export default function Home() {
             Track your workouts, including exercises, sets, and reps.
           </p>
 
-          <Select>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Select a user" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="christian">Christian</SelectItem>
-              <SelectItem value="cheyenna">Cheyenna</SelectItem>
-              <SelectItem value="devan">Devan</SelectItem>
-            </SelectContent>
-          </Select>
-
-           <Button onClick={() => router.push('/workouts')}>Log in</Button>
+          <UserSelect />
         </div>
       </main>
     </div>

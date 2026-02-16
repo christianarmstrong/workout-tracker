@@ -1,13 +1,16 @@
 "use client";
-import ExerciseCard from "@/components/exercise-card";
 import ModifyWorkout from "@/components/modify-workout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import React from "react";
 
 export default function Page() {
-    const router = useRouter();
+    const [exercisesInWorkout, setExercisesInWorkout] = React.useState<Array<any>>([]);
+
     return (
-        <ModifyWorkout type="edit"/>
+        <ModifyWorkout
+            type="edit"
+            availableExercises={exercisesInWorkout}
+            exercisesInWorkout={exercisesInWorkout}
+            setExercisesInWorkout={setExercisesInWorkout}
+        />
     )
 }
