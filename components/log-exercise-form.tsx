@@ -153,7 +153,7 @@ export default function LogExerciseForm({ id, sets }: { id: string; sets: number
       }
       toast("Sets logged");
       reset();
-      router.push("/workouts");
+      router.back();
     } catch (e) {
       console.error(e);
       toast("Unexpected error");

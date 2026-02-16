@@ -45,7 +45,7 @@ export default async function Page() {
                     </h1>
                     
                     {exercises?.map((exercise: { id: string; name: string; sets: string; reps: string }) => (
-                    <ExerciseCard key={exercise.id} id={exercise.id} name={exercise.name} sets={exercise.sets} reps={exercise.reps} type="none" />
+                    <ExerciseCard key={exercise.id} id={exercise.id} name={exercise.name} sets={exercise.sets} reps={exercise.reps} type="delete" />
                     ))}
 
                     <div className="col-span-8 mt-6">
